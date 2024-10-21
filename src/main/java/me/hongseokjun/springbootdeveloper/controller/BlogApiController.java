@@ -5,13 +5,11 @@ import lombok.RequiredArgsConstructor;
 import me.hongseokjun.springbootdeveloper.domain.Article;
 import me.hongseokjun.springbootdeveloper.dto.AddArticleRequest;
 import me.hongseokjun.springbootdeveloper.dto.ArticleResponse;
+import me.hongseokjun.springbootdeveloper.dto.UpdateArticleRequest;
 import me.hongseokjun.springbootdeveloper.service.BlogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,6 +34,7 @@ public class BlogApiController {
     // ResponseEntity.status().body()는 응답 코드로 201, 즉, Created 를 응답하고 테이블에 저장된 객체를 반환
 
 
+    //블로그 글 목록 조회
     @GetMapping("/api/articles")
     public ResponseEntity<List<ArticleResponse>> findAllArticles() {
         List<ArticleResponse> articles = blogService.findAll()
@@ -47,5 +46,32 @@ public class BlogApiController {
                 .body(articles);
         // GET 요청이 오면 findAll() 메서드를 호출 후 응답용 객체인 ArticleResponse 로 파싱해 body 에 담아 클라이언트에 전송
         // ResponseEntity 는 HTTP 응답을 상태 코드, 헤더, 본문(body)에 담아 반환
+    }
+
+
+    //블로그 글 조회
+    @GetMapping("/api/articles/{id}") // URL 에서 {id}에 해당하는 값이 id 로 들어옴
+    //url 경로에서 값 추출
+    public ResponseEntity<ArticleResponse> findArticle(@PathVariable long id)
+    {
+        Article article = blogService.findById(id); // 엔티티 조회, 없으면 예외
+
+        return ResponseEntity.ok().body(new ArticleResponse(article));
+    }
+    // @PathVariable : URL 에서 값을 가져오는 애너테이션, 여기선 id 값
+
+    // 글 삭제
+    @DeleteMapping("/api/articles/{id}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable long id){
+        blogService.delete(id);
+
+        return ResponseEntity.ok().build(); //Http 응답 생성, build()는 본문이 없는 응답 생성
+    }
+
+    // 글 수정
+    @PutMapping("/api/articles/{id}")
+    public ResponseEntity<Article> updateArticle(@PathVariable long id, @RequestBody UpdateArticleRequest request){
+        Article updateArticle = blogService.update(id, request);
+        return ResponseEntity.ok().body(updateArticle); //응답 값은 body 에 담아 전송
     }
 }
